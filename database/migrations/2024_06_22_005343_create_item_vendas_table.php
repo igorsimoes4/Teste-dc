@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+class CreateItemVendasTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,10 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
+        Schema::dropIfExists('item_vendas'); // Drop table if exists
+
         Schema::create('item_vendas', function (Blueprint $table) {
             $table->id();
             $table->foreignId('venda_id')->constrained()->onDelete('cascade');
-            $table->foreignId('produto_id')->constrained();
+            $table->foreignId('produto_id')->constrained()->onDelete('cascade');
             $table->integer('quantidade');
             $table->decimal('preco_unitario', 10, 2);
             $table->decimal('preco_total', 10, 2);
@@ -33,4 +35,4 @@ return new class extends Migration
     {
         Schema::dropIfExists('item_vendas');
     }
-};
+}
