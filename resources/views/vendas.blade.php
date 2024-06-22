@@ -126,7 +126,7 @@
                         <div class="input-group">
                             <input type="search" name="search" id="searchInput"
                                 class="form-control form-control-lg @error('search') is-invalid @enderror"
-                                placeholder="Digite a Placa">
+                                placeholder="Digite o Nome do Cliente">
                             <div class="input-group-append">
                                 <button class="btn btn-lg btn-default"><i class="fa fa-search"></i></button>
                             </div>
