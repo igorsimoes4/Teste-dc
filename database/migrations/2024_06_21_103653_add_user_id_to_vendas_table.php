@@ -16,9 +16,6 @@ return new class extends Migration
         Schema::table('vendas', function (Blueprint $table) {
             Schema::table('vendas', function (Blueprint $table) {
                 $table->unsignedBigInteger('user_id')->after('forma_pagamento');
-
-                // Adicionar a foreign key constraint se necessário
-                $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             });
         });
     }
@@ -31,7 +28,6 @@ return new class extends Migration
     public function down()
     {
         Schema::table('vendas', function (Blueprint $table) {
-            $table->dropForeign(['user_id']);
             $table->dropColumn('user_id');
         });
     }
