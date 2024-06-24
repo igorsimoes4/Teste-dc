@@ -55,7 +55,7 @@
             @foreach ($venda->parcelas as $index => $parcela)
                 <div class="parcela mt-2 row" style="gap:10px;">
                     <input type="date" name="parcelas[{{ $index }}][data_vencimento]" class="form-control col-5" placeholder="Data de Vencimento" value="{{ $parcela->data_vencimento }}">
-                    <input type="number" name="parcelas[{{ $index }}][valor]" class="form-control col-5" placeholder="Valor" value="{{ $parcela->valor }}">
+                    <input type="number" name="parcelas[{{ $index }}][valor]" class="form-control col-5 valor-parcela-input" placeholder="Valor" value="{{ $parcela->valor }}">
                     <button type="button" class="btn btn-sm btn-danger mt-2" onclick="removerParcela(this)">Remover Parcela</button>
                 </div>
             @endforeach
@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         const novaParcelaHTML =
             `<div class="parcela mt-2 row" style="gap:10px;">
                 <input type="date" name="parcelas[${index}][data_vencimento]" class="form-control col-5" placeholder="Data de Vencimento">
-                <input type="number" name="parcelas[${index}][valor]" class="form-control col-5" placeholder="Valor">
+                <input type="number" name="parcelas[${index}][valor]" class="form-control col-5 valor-parcela-input" placeholder="Valor">
                 <button type="button" class="btn btn-sm btn-danger mt-2" onclick="removerParcela(this)">Remover Parcela</button>
             </div>`;
         parcelasDiv.insertAdjacentHTML('beforeend', novaParcelaHTML);
@@ -157,29 +157,37 @@ document.addEventListener('DOMContentLoaded', (event) => {
     window.removerParcela = function(btn) {
         const parcelaDiv = btn.parentElement;
         parcelaDiv.remove();
+        atualizarParcelas();
     };
 
-    // Function to update parcels based on num_parcelas input
+    // Function to update parcels based on num_parcelas input and total value
     function atualizarParcelas() {
         const numParcelas = parseInt(numParcelasInput.value) || 1;
         const parcelasDiv = document.getElementById('parcelas');
         const dataAtual = new Date();
         const dataInicial = new Date(dataAtual.getFullYear(), dataAtual.getMonth() + 1, 1); // Próximo mês, dia 1
-        parcelasDiv.innerHTML = '';
 
         const total = Array.from(produtosDiv.querySelectorAll('.preco-total-input'))
             .reduce((sum, input) => sum + parseFloat(input.value || 0), 0);
         const valorParcela = (total / numParcelas).toFixed(2);
 
+        const existingParcelas = Array.from(parcelasDiv.children).map((parcela, i) => ({
+            data_vencimento: parcela.querySelector('input[type="date"]').value,
+            valor: parcela.querySelector('input[type="number"]').value,
+        }));
+
+        parcelasDiv.innerHTML = '';
+
         for (let i = 0; i < numParcelas; i++) {
             const dataVencimento = new Date(dataInicial);
             dataVencimento.setMonth(dataVencimento.getMonth() + i);
-            const dataVencimentoStr = dataVencimento.toISOString().split('T')[0];
+            const dataVencimentoStr = existingParcelas[i] ? existingParcelas[i].data_vencimento : dataVencimento.toISOString().split('T')[0];
+            const parcelaValor = valorParcela; // Use valorParcela for all parcels, updating the existing ones as well
 
             const novaParcelaHTML =
                 `<div class="parcela mt-2 row" style="gap:10px;">
                     <input type="date" name="parcelas[${i}][data_vencimento]" class="form-control col-5" placeholder="Data de Vencimento" value="${dataVencimentoStr}">
-                    <input type="number" name="parcelas[${i}][valor]" class="form-control col-5" placeholder="Valor" value="${valorParcela}" readonly>
+                    <input type="number" name="parcelas[${i}][valor]" class="form-control col-5 valor-parcela-input" placeholder="Valor" value="${parcelaValor}" readonly>
                     <button type="button" class="btn btn-sm btn-danger mt-2" onclick="removerParcela(this)">Remover Parcela</button>
                 </div>`;
             parcelasDiv.insertAdjacentHTML('beforeend', novaParcelaHTML);
@@ -212,7 +220,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     // Ensure form submission for both payment methods
     vendaForm.addEventListener('submit', (event) => {
-        if (formaPagamentoSelect.value == "1") {
+        if (formaPagamentoSelect.value != "2") {
             // Remove all parcela elements to avoid validation issues
             const parcelasDiv = document.getElementById('parcelas');
             parcelasDiv.innerHTML = '';
